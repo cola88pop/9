@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Order Parser - Cita Rasa Indo v3.0 GEMINI HARDCODED</title>
+<title>AI CRI</title>
 <style>
 * {
   margin: 0;
@@ -929,17 +929,17 @@ html {
   <div class="header">
     <h1>BISMILLAH BERKAH</h1>
     <p>Cita Rasa Indonesia Summarizer</p>
-    <span class="ai-badge">✨ v3.0 - GEMINI HARDCODED!</span>
+    <span class="ai-badge">✨ v3.1 - DASH LIST FIXED!</span>
     <span class="ai-badge gemini-badge">🤖 Ready!</span>
   </div>
 
   <div class="api-key-box">
     <h3>🔥 GEMINI AI ACTIVE!</h3>
     <div class="api-status connected">
-      ✅ Google Gemini API hardcoded - Ready to parse! 🚀
+      ✅ Google Gemini API! 🚀
     </div>
     <div style="font-size: 0.8em; color: var(--text-muted); margin-top: 8px;">
-      ⚠️ Warning: API key is hardcoded in code (TESTING ONLY!)
+      ⚠️ Warning: DOUBLE CHECK!
     </div>
   </div>
 
@@ -952,11 +952,12 @@ html {
         maxlength="5000"
         placeholder="AI bisa ngerti berbagai format!
 
+✓ Dash list: - prames a 2, - ayam 1
 ✓ Multi-item: prames a + ayam + bakwan 5
 ✓ Typo: pramse, ayma, cumi2
 ✓ Angka: dua, 2, x2, ×2
 ✓ Auto-merge item yang sama!
-✓ Arrow format: PARARI ▶️ dengan deskripsi ➡️
+✓ Arrow format: PARARI ▶️ (deskripsi ➡️ akan di-skip)
 ✓ Natural language: 'mau pesan 2 prames ya'
 ✓ Export ke Telegram @CitaRasaIndo
 
@@ -1587,7 +1588,9 @@ function parseOrdersAI(text) {
     if (!line || line.length < 2) continue;
     if (/^[-=_]+$/.test(line)) continue;
     
-    if (/^[➡️→▶️•▪️◾️▫️⬛️⬜️◼️◻️⚫️⚪️🔸🔹🔶🔷▸►‣⁃-]\s*/.test(line)) {
+    // 🔥 FIX: JANGAN skip dash (-) karena itu format list biasa!
+    // CUMA skip arrow/bullet yang jelas deskripsi paket
+    if (/^[➡️→▶️•▪️◾️▫️⬛️⬜️◼️◻️⚫️⚪️🔸🔹🔶🔷▸►‣⁃]\s*/.test(line)) {
       continue;
     }
     
@@ -2166,8 +2169,7 @@ function exportAsReceipt() {
     
     output += `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
     output += `💰 TOTAL: ¥${grandTotal}\n`;
-    output += `\n🤖 Powered by Gemini AI\n`;
-    output += `MOHON DOUBLE CHECK!`;
+    output += `**MOHON DOUBLE CHECK!**`;
     
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(output).then(() => {
@@ -2234,25 +2236,18 @@ function clearAll() {
 }
 
 function loadExample() {
-  const example = `GROUP ORDER INTERNAL 🕺🏻👋🏻, [10/14/2025 2:23 AM]
-PAKET RICEBOWL TERI ▶️ RMB25 x3
-➡️Nasi Putih
-➡️Sambal Teri
-➡️Telur Ceplok
-➡️Timun
+  const example = `- Parakus 2
+- paracu 1
+- parari 1
+- prames a x2
 
-GROUP ORDER INTERNAL 🕺🏻👋🏻, [10/14/2025 2:23 AM]
-PAKET RICEBOWL CUMI ▶️ RMB25 x1
+ATAU format arrow:
+PAKET RICEBOWL TERI ▶️ x3
 ➡️Nasi Putih
-➡️Sambal Cumi
-➡️Telur Ceplok
-➡️Timun
-
-PRAMES A x2
-BAKWAN 5 PACK`;
+➡️Sambal Teri`;
 
   document.getElementById('orderInput').value = example;
-  showAlert('✨ Contoh ARROW FORMAT dimuat! Gemini AI siap parse! 🤖', 'info');
+  showAlert('✨ Contoh dengan DASH LIST format! Gemini AI siap parse! 🤖', 'info');
 }
 
 // 🔥 INIT ON PAGE LOAD
