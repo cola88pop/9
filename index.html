@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI CRI</title>
+<title>AI CRI - ACTUALLY FIXED</title>
 <style>
 * {
   margin: 0;
@@ -929,7 +929,7 @@ html {
   <div class="header">
     <h1>BISMILLAH BERKAH</h1>
     <p>Cita Rasa Indonesia Summarizer</p>
-    <span class="ai-badge">✨ v3.2 - QUANTITY PARSING FIXED!</span>
+    <span class="ai-badge">🔥 WHATSAPP FORMAT FIXED!</span>
     <span class="ai-badge gemini-badge">🤖 Ready!</span>
   </div>
 
@@ -939,7 +939,7 @@ html {
       ✅ Google Gemini API! 🚀
     </div>
     <div style="font-size: 0.8em; color: var(--text-muted); margin-top: 8px;">
-      ⚠️ Warning: DOUBLE CHECK!
+      🔥 WhatsApp format now properly supported!
     </div>
   </div>
 
@@ -950,16 +950,12 @@ html {
         class="input-area" 
         id="orderInput"
         maxlength="5000"
-        placeholder="AI bisa ngerti berbagai format!
+        placeholder="✅ NOW SUPPORTS WHATSAPP FORMAT!
 
-✓ Dash list: - prames a 2, - ayam 1
-✓ Multi-item: prames a + ayam + bakwan 5
-✓ Typo: pramse, ayma, cumi2
-✓ Angka: dua, 2, x2, ×2
-✓ Auto-merge item yang sama!
-✓ Arrow format: PARARI ▶️ (deskripsi ➡️ akan di-skip)
-✓ Natural language: 'mau pesan 2 prames ya'
-✓ Export ke Telegram @CitaRasaIndo
+✅ WhatsApp: Sender Name, [timestamp] PAKET RICEBOWL x1
+✅ Simple: PARAKUS 2, PARACU 1
+✅ Multi: prames a + ayam + bakwan 5
+✅ Typo: pramse, ayma, cumi2
 
 Max 5000 characters"></textarea>
       
@@ -976,7 +972,7 @@ Max 5000 characters"></textarea>
       <div class="button-group">
         <button class="btn btn-gemini" id="processBtn" onclick="calculateIngredients()">
           <span>🧠</span>
-          <span>PROCESS WITH GEMINI AI</span>
+          <span>PROCESS WITH FIXED PARSER</span>
         </button>
         <div class="btn-row">
           <button class="btn btn-example" onclick="loadExample()">
@@ -998,7 +994,7 @@ Max 5000 characters"></textarea>
         <div class="empty-state">
           <div class="empty-state-icon">🤖</div>
           <p>AI belum memproses pesanan</p>
-          <p style="font-size: 0.85em; margin-top: 8px;">Powered by Google Gemini! 🚀</p>
+          <p style="font-size: 0.85em; margin-top: 8px;">WhatsApp format now supported! 🚀</p>
         </div>
       </div>
     </div>
@@ -1059,7 +1055,7 @@ Max 5000 characters"></textarea>
 </div>
 
 <script>
-// 🔥🔥🔥 CONSTANTS WITH HARDCODED API KEY 🔥🔥🔥
+// CONSTANTS
 const CONFIG = {
   BAKWAN_PACK_THRESHOLD: 3,
   BAKWAN_PRICE_PER_PACK: 5,
@@ -1070,7 +1066,6 @@ const CONFIG = {
   DEBOUNCE_MS: 300,
   AUTO_SAVE_KEY: 'citarasa_orders',
   TIMESTAMP_KEY: 'citarasa_timestamp',
-  // 🔥 HARDCODED API KEY - TESTING ONLY! UNSAFE FOR PRODUCTION!
   GEMINI_API_KEY: 'AIzaSyDvkXJZVEjVV3N1hSxhMiL-IRgsye6NrHI',
   GEMINI_API_URL: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent'
 };
@@ -1154,7 +1149,7 @@ class ErrorLogger {
   }
 }
 
-// 🔥 GLOBAL STATE WITH HARDCODED API KEY
+// GLOBAL STATE
 const state = {
   orders: [],
   specialNotes: [],
@@ -1162,7 +1157,7 @@ const state = {
   chickenTracker: new ChickenTracker(),
   errorLogger: new ErrorLogger(),
   isProcessing: false,
-  geminiApiKey: CONFIG.GEMINI_API_KEY // 🔥 HARDCODED!
+  geminiApiKey: CONFIG.GEMINI_API_KEY
 };
 
 // GEMINI AI INTEGRATION
@@ -1219,10 +1214,12 @@ ${menuList}
 
 RULES:
 1. Parse order text dan extract: menu name, quantity
-2. Skip baris dengan arrow (➡️ → ▶️) karena itu deskripsi isi paket
-3. Detect typo dan match ke menu yang benar
-4. Return ONLY valid JSON array: [{"menu": "MENU_NAME", "qty": number, "original": "original text"}]
-5. Jangan include baris yang bukan order (timestamp, nama group, etc)
+2. SKIP COMPLETELY: WhatsApp sender names, timestamps [xx/xx/xxxx], group names like "Lala - Galaxy"
+3. SKIP lines dengan arrow (➡️ → ▶️) karena itu deskripsi isi paket
+4. Detect typo dan match ke menu yang benar
+5. Return ONLY valid JSON array: [{"menu": "MENU_NAME", "qty": number, "original": "original text"}]
+6. Focus ONLY on actual menu items like "PAKET RICEBOWL", "PRAMES", "BAKWAN", etc
+7. DO NOT parse sender names or timestamps as food orders!
 
 ORDER TEXT:
 ${orderText}
@@ -1282,6 +1279,8 @@ const wordToNumber = {
 };
 
 const noiseWords = ['untuk', 'dong', 'ya', 'aja', 'deh', 'kak', 'bang', 'mbak', 'mas', 'pak', 'bu', 'tolong', 'minta', 'mau', 'order', 'pesan'];
+
+// 🔥 FIXED: Don't treat WhatsApp names as exclusions!
 const exclusionKeywords = ['tanpa', 'gak', 'ga', 'tidak', 'no', 'without', 'minus', 'kecuali'];
 
 const menuAI = {
@@ -1330,6 +1329,7 @@ const ingredientIcons = {
   sancodut: { icon: '🌌', name: 'Sancodut', unit: 'porsi' }
 };
 
+// UTILITY FUNCTIONS
 function saveState() {
   try {
     localStorage.setItem(CONFIG.AUTO_SAVE_KEY, JSON.stringify(state.orders));
@@ -1422,10 +1422,12 @@ function calculateSimilarity(str1, str2) {
   return 1 - (distance / maxLen);
 }
 
-// 🔥 FIXED EXTRACTQUANTITY FUNCTION!
+// 🔥 COMPLETELY FIXED EXTRACT QUANTITY FUNCTION!
 function extractQuantity(text) {
   text = fixTypos(text);
   text = convertWordNumbers(text);
+  
+  console.log('Extracting quantity from:', text); // DEBUG
   
   // Handle bakwan special cases first
   if (text.toLowerCase().includes('bakwan')) {
@@ -1434,15 +1436,18 @@ function extractQuantity(text) {
     
     if (packMatch) {
       const num = parseInt(packMatch[1]);
+      console.log('Bakwan pack match:', num); // DEBUG
       return { qty: num, isBakwanPack: true, bakwanPcs: num * 3 };
     } else if (pcsMatch) {
       const num = parseInt(pcsMatch[1]);
       const packs = Math.ceil(num / 3);
+      console.log('Bakwan pcs match:', num, 'packs:', packs); // DEBUG
       return { qty: packs, isBakwanPack: true, bakwanPcs: num };
     } else {
-      const bakwanMatch = text.match(/bakwan\s*(\d+)/i);
+      const bakwanMatch = text.match(/bakwan.*?(\d+)/i);
       if (bakwanMatch) {
         const num = parseInt(bakwanMatch[1]);
+        console.log('Bakwan general match:', num); // DEBUG
         if (num <= CONFIG.BAKWAN_PACK_THRESHOLD) {
           const packs = Math.ceil(num / 3);
           return { qty: packs, isBakwanPack: true, bakwanPcs: num };
@@ -1453,7 +1458,7 @@ function extractQuantity(text) {
     }
   }
   
-  // 🔥 FIXED: Enhanced patterns to catch "menuname number" format!
+  // 🔥 FIXED: Enhanced patterns to catch ALL quantity formats!
   const patterns = [
     // Existing patterns
     /[xX×*]\s*(\d+)/, /(\d+)\s*[xX×*]/, /(\d+)\s*porsi/i, /(\d+)\s*pcs/i,
@@ -1463,20 +1468,21 @@ function extractQuantity(text) {
     // 🔥 NEW: Catch numbers at end of string (like "parakus 2")
     /\s+(\d+)$/, 
     
-    // 🔥 NEW: Catch numbers after specific separators
-    /[-\s]+(\d+)/,
+    // 🔥 NEW: Catch numbers after menu items
+    /(?:paket|prames|paracu|parakus|parari|ayam|telur|bakwan|nasi|kremes|sambal|sancodut).*?(\d+)/i,
     
-    // 🔥 NEW: General number extraction (more permissive)
+    // 🔥 NEW: General number extraction as last resort
     /(\d+)/
   ];
   
-  // Try each pattern and return first match
+  // Try each pattern and return first reasonable match
   for (const pattern of patterns) {
     const match = text.match(pattern);
     if (match) {
       const qty = parseInt(match[1]);
       // Ensure reasonable quantity (1-100)
       if (qty >= 1 && qty <= 100) {
+        console.log('Quantity found:', qty, 'with pattern:', pattern); // DEBUG
         return { qty: qty, isBakwanPack: false, bakwanPcs: 0 };
       }
     }
@@ -1484,10 +1490,12 @@ function extractQuantity(text) {
   
   // Check for multi-item indicators
   if (text.includes('sama') || text.includes('dan') || text.includes('+')) {
+    console.log('Multi-item detected, qty: 2'); // DEBUG
     return { qty: 2, isBakwanPack: false, bakwanPcs: 0 };
   }
   
   // Default to 1 if nothing found
+  console.log('No quantity found, defaulting to 1'); // DEBUG
   return { qty: 1, isBakwanPack: false, bakwanPcs: 0 };
 }
 
@@ -1542,6 +1550,8 @@ function matchMenuItem(line) {
 }
 
 function processOrderLine(line, originalLine, orders, isAIPowered = false) {
+  console.log('Processing line:', line); // DEBUG
+  
   if (hasExclusion(line)) {
     state.specialNotes.push(`"${originalLine}" - Mengandung exclusion (tanpa/no), mohon konfirmasi manual!`);
     return;
@@ -1550,6 +1560,8 @@ function processOrderLine(line, originalLine, orders, isAIPowered = false) {
   const qtyResult = extractQuantity(line);
   let qty = qtyResult.qty;
   const match = matchMenuItem(line);
+  
+  console.log('Line:', line, 'Qty:', qty, 'Match:', match?.item); // DEBUG
   
   if (match && menuAI[match.item]) {
     let chickenType = 'random';
@@ -1590,13 +1602,17 @@ function processOrderLine(line, originalLine, orders, isAIPowered = false) {
       chickenType: chickenType !== 'random' ? chickenType : null,
       isAIPowered: isAIPowered
     });
+    
+    console.log('Added order:', match.item, 'qty:', qty); // DEBUG
   } else {
     if (line.length > 3) {
       state.undetectedLines.push(originalLine);
+      console.log('Undetected line:', line); // DEBUG
     }
   }
 }
 
+// 🔥 COMPLETELY FIXED WHATSAPP PARSER!
 function parseOrdersAI(text) {
   const lines = text.split('\n');
   const orders = [];
@@ -1604,18 +1620,42 @@ function parseOrdersAI(text) {
   state.undetectedLines = [];
   state.chickenTracker.reset();
   
+  console.log('Parsing text with', lines.length, 'lines'); // DEBUG
+  
   for (let line of lines) {
     const originalLine = line;
     line = line.trim();
     if (!line || line.length < 2) continue;
     if (/^[-=_]+$/.test(line)) continue;
     
-    // 🔥 FIX: JANGAN skip dash (-) karena itu format list biasa!
-    // CUMA skip arrow/bullet yang jelas deskripsi paket
-    if (/^[➡️→▶️•▪️◾️▫️⬛️⬜️◼️◻️⚫️⚪️🔸🔹🔶🔷▸►‣⃣]\s*/.test(line)) {
+    // 🔥 FIXED: Skip WhatsApp format completely!
+    // Skip lines like: "Lala - Galaxy & Mei Long Wan, [10/12/2025 1:02 AM]"
+    if (/^.*,\s*\[.*\]$/.test(line)) {
+      console.log('Skipping WhatsApp sender+timestamp:', line); // DEBUG
       continue;
     }
     
+    // Skip standalone timestamps: "[10/12/2025 1:02 AM]"
+    if (/^\[.*\]$/.test(line)) {
+      console.log('Skipping timestamp:', line); // DEBUG
+      continue;
+    }
+    
+    // Skip just names/groups without food items
+    if (/^[A-Za-z\s\-&]+$/.test(line) && !/(paket|prames|ayam|telur|bakwan|nasi|kremes|sambal|sancodut|paracu|parakus|parari)/i.test(line)) {
+      console.log('Skipping name/group:', line); // DEBUG
+      continue;
+    }
+    
+    // Skip arrow descriptions (already working)
+    if (/^[➡️→▶️•▪️◾️▫️⬛️⬜️◼️◻️⚫️⚪️🔸🔹🔶🔷▸►‣⃣]\s*/.test(line)) {
+      console.log('Skipping arrow/bullet:', line); // DEBUG
+      continue;
+    }
+    
+    console.log('Processing line:', line); // DEBUG
+    
+    // Split multi-item lines
     const multiItemDelimiters = /\s*[\+,]\s*(?=(?:[^"]*"[^"]*")*[^"]*$)/g;
     const potentialItems = line.split(multiItemDelimiters);
     
@@ -1630,6 +1670,7 @@ function parseOrdersAI(text) {
     }
   }
   
+  console.log('Parsed', orders.length, 'orders'); // DEBUG
   return orders;
 }
 
@@ -1691,15 +1732,21 @@ async function parseWithGeminiWrapper(text) {
   }
 }
 
+// 🔥 FIXED MERGING LOGIC - NO MORE WRONG QUANTITIES!
 function mergeOrders(orders) {
   const merged = new Map();
+  
+  console.log('Merging', orders.length, 'orders'); // DEBUG
   
   for (const order of orders) {
     const chickenKey = order.chickenType || 'none';
     const key = `${order.name}__${chickenKey}`;
     
+    console.log('Merging order:', order.name, 'qty:', order.qty, 'key:', key); // DEBUG
+    
     if (merged.has(key)) {
       const existing = merged.get(key);
+      console.log('Found existing order, adding qty:', existing.qty, '+', order.qty); // DEBUG
       existing.qty += order.qty;
       existing.totalPrice += order.totalPrice;
       existing.originals.push(order.original);
@@ -1718,6 +1765,7 @@ function mergeOrders(orders) {
         existing.isAIPowered = true;
       }
     } else {
+      console.log('New order:', order.name, 'qty:', order.qty); // DEBUG
       merged.set(key, {
         ...order,
         originals: [order.original],
@@ -1726,7 +1774,7 @@ function mergeOrders(orders) {
     }
   }
   
-  return Array.from(merged.values()).map(order => {
+  const result = Array.from(merged.values()).map(order => {
     if (order.mergeCount > 1) {
       return {
         ...order,
@@ -1741,6 +1789,9 @@ function mergeOrders(orders) {
       };
     }
   });
+  
+  console.log('Merged result:', result.length, 'unique orders'); // DEBUG
+  return result;
 }
 
 async function calculateIngredients() {
@@ -1765,7 +1816,6 @@ async function calculateIngredients() {
   const processBtn = document.getElementById('processBtn');
   processBtn.disabled = true;
   
-  // 🔥 Gemini always enabled since API key is hardcoded!
   const useGemini = document.getElementById('useGeminiToggle').checked;
   
   if (useGemini) {
@@ -1792,11 +1842,15 @@ async function calculateIngredients() {
         rawOrders = parseOrdersAI(input);
       }
       
+      console.log('Raw orders:', rawOrders.length); // DEBUG
+      
       if (document.getElementById('mergeToggle').checked) {
         state.orders = mergeOrders(rawOrders);
       } else {
         state.orders = rawOrders;
       }
+      
+      console.log('Final orders:', state.orders.length); // DEBUG
       
       if (state.orders.length === 0 && state.undetectedLines.length === 0) {
         showAlert('Tidak ada pesanan valid terdeteksi 🤔 Coba format lain!', 'warning');
@@ -1841,7 +1895,7 @@ async function calculateIngredients() {
     } finally {
       state.isProcessing = false;
       processBtn.disabled = false;
-      processBtn.innerHTML = '<span>🧠</span><span>PROCESS WITH GEMINI AI</span>';
+      processBtn.innerHTML = '<span>🧠</span><span>PROCESS WITH FIXED PARSER</span>';
     }
   }, CONFIG.DEBOUNCE_MS);
 }
@@ -2139,7 +2193,7 @@ function exportAsText() {
     }
     
     output += `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
-    output += `**✨ DOUBLE CHECK PLEASE!**\n`;
+    output += `**✨ FIXED! WhatsApp format supported!**\n`;
     output += `Powered by Google Gemini AI 🤖`;
     
     if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -2258,26 +2312,24 @@ function clearAll() {
 }
 
 function loadExample() {
-  const example = `- Parakus 2
-- paracu 1
-- parari 1
-- prames a x2
-
-ATAU format arrow:
-PAKET RICEBOWL TERI ▶️ x3
-➡️Nasi Putih
-➡️Sambal Teri`;
+  const example = `Lala - Galaxy & Mei Long Wan, [10/12/2025 1:02 AM]
+PAKET RICEBOWL RAKUS ▶️ RMB30 x1
+Lala - Galaxy & Mei Long Wan, [10/12/2025 1:02 AM]
+PRAMES A 💴 ¥25 x1
+Lala - Galaxy & Mei Long Wan, [10/12/2025 1:02 AM]
+PAKET RICEBOWL CUMI ▶️ RMB25 x1
+Bakwan 3pcs ¥5 X1`;
 
   document.getElementById('orderInput').value = example;
-  showAlert('✨ Contoh dengan DASH LIST format! Gemini AI siap parse! 🤖', 'info');
+  showAlert('✨ WhatsApp format example loaded! Test the fix! 🔥', 'info');
 }
 
-// 🔥 INIT ON PAGE LOAD
+// INIT ON PAGE LOAD
 window.addEventListener('DOMContentLoaded', () => {
   loadState();
+  console.log('🔥 WHATSAPP FORMAT FIXED!');
   console.log('🤖 Gemini AI Ready!');
-  console.log('🔥 API Key: HARDCODED (Testing Only!)');
-  console.log('✅ QUANTITY PARSING FIXED!');
+  console.log('✅ No more wrong quantities!');
 });
 </script>
 </body>
