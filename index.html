@@ -929,7 +929,7 @@ html {
   <div class="header">
     <h1>BISMILLAH BERKAH</h1>
     <p>Cita Rasa Indonesia Summarizer</p>
-    <span class="ai-badge">✨ v3.1 - DASH LIST FIXED!</span>
+    <span class="ai-badge">✨ v3.2 - QUANTITY PARSING FIXED!</span>
     <span class="ai-badge gemini-badge">🤖 Ready!</span>
   </div>
 
@@ -965,7 +965,7 @@ Max 5000 characters"></textarea>
       
       <div class="toggle-container" onclick="document.getElementById('mergeToggle').click()">
         <input type="checkbox" id="mergeToggle" checked onclick="event.stopPropagation()">
-        <label for="mergeToggle">🔖 Gabungkan item yang sama (RECOMMENDED)</label>
+        <label for="mergeToggle">📖 Gabungkan item yang sama (RECOMMENDED)</label>
       </div>
 
       <div class="toggle-container" onclick="document.getElementById('useGeminiToggle').click()">
@@ -993,7 +993,7 @@ Max 5000 characters"></textarea>
     </div>
 
     <div class="card">
-      <h2>🔍 Detected Orders</h2>
+      <h2>📝 Detected Orders</h2>
       <div id="ordersList" class="orders-list">
         <div class="empty-state">
           <div class="empty-state-icon">🤖</div>
@@ -1042,7 +1042,7 @@ Max 5000 characters"></textarea>
       </div>
       
       <div id="chickenNotes" class="chicken-notes" style="display:none;">
-        <strong>🍗 Catatan Ayam:</strong> <span id="chickenDetails"></span>
+        <strong>🐗 Catatan Ayam:</strong> <span id="chickenDetails"></span>
       </div>
       
       <div id="notesSection" class="notes-section" style="display:none;">
@@ -1312,7 +1312,7 @@ const menuAI = {
 };
 
 const ingredientIcons = {
-  chicken: { icon: '🍗', name: 'Ayam Goreng', unit: 'potong' },
+  chicken: { icon: '🐗', name: 'Ayam Goreng', unit: 'potong' },
   egg_ceplok: { icon: '🍳', name: 'Telur Ceplok', unit: 'butir' },
   egg_balado: { icon: '🥚', name: 'Telur Balado', unit: 'butir' },
   egg_dadar: { icon: '🍳', name: 'Telur Dadar', unit: 'butir' },
@@ -1327,7 +1327,7 @@ const ingredientIcons = {
   nasi: { icon: '🍚', name: 'Nasi Putih', unit: 'centong' },
   kremes: { icon: '✨', name: 'Kremes', unit: 'pc' },
   timun: { icon: '🥒', name: 'Timun', unit: 'potong' },
-  sancodut: { icon: '🍌', name: 'Sancodut', unit: 'porsi' }
+  sancodut: { icon: '🌌', name: 'Sancodut', unit: 'porsi' }
 };
 
 function saveState() {
@@ -1422,10 +1422,12 @@ function calculateSimilarity(str1, str2) {
   return 1 - (distance / maxLen);
 }
 
+// 🔥 FIXED EXTRACTQUANTITY FUNCTION!
 function extractQuantity(text) {
   text = fixTypos(text);
   text = convertWordNumbers(text);
   
+  // Handle bakwan special cases first
   if (text.toLowerCase().includes('bakwan')) {
     const packMatch = text.match(/bakwan\s*(\d+)\s*pack/i);
     const pcsMatch = text.match(/bakwan\s*(\d+)\s*(?:pcs|pc|potong|buah)/i);
@@ -1451,21 +1453,41 @@ function extractQuantity(text) {
     }
   }
   
+  // 🔥 FIXED: Enhanced patterns to catch "menuname number" format!
   const patterns = [
+    // Existing patterns
     /[xX×*]\s*(\d+)/, /(\d+)\s*[xX×*]/, /(\d+)\s*porsi/i, /(\d+)\s*pcs/i,
     /(\d+)\s*pc/i, /(\d+)\s*buah/i, /(\d+)\s*bh/i, /(\d+)\s*potong/i,
-    /(\d+)\s*ptg/i, /(\d+)\s*pack/i
+    /(\d+)\s*ptg/i, /(\d+)\s*pack/i,
+    
+    // 🔥 NEW: Catch numbers at end of string (like "parakus 2")
+    /\s+(\d+)$/, 
+    
+    // 🔥 NEW: Catch numbers after specific separators
+    /[-\s]+(\d+)/,
+    
+    // 🔥 NEW: General number extraction (more permissive)
+    /(\d+)/
   ];
   
+  // Try each pattern and return first match
   for (const pattern of patterns) {
     const match = text.match(pattern);
-    if (match) return { qty: parseInt(match[1]), isBakwanPack: false, bakwanPcs: 0 };
+    if (match) {
+      const qty = parseInt(match[1]);
+      // Ensure reasonable quantity (1-100)
+      if (qty >= 1 && qty <= 100) {
+        return { qty: qty, isBakwanPack: false, bakwanPcs: 0 };
+      }
+    }
   }
   
+  // Check for multi-item indicators
   if (text.includes('sama') || text.includes('dan') || text.includes('+')) {
     return { qty: 2, isBakwanPack: false, bakwanPcs: 0 };
   }
   
+  // Default to 1 if nothing found
   return { qty: 1, isBakwanPack: false, bakwanPcs: 0 };
 }
 
@@ -1476,7 +1498,7 @@ function matchMenuItem(line) {
   cleanLine = cleanLine.toLowerCase()
     .replace(/[¥💴]\s*\d+/g, '')
     .replace(/rmb\s*\d+/gi, '')
-    .replace(/▶️|👌|🍗|🍳|🥔|🍱|🥬|💪|▪️/g, '')
+    .replace(/▶️|👌|🐗|🍳|🥔|🱑|🥬|💪|▪️/g, '')
     .replace(/\([^)]*\)/g, '')
     .trim();
   
@@ -1590,7 +1612,7 @@ function parseOrdersAI(text) {
     
     // 🔥 FIX: JANGAN skip dash (-) karena itu format list biasa!
     // CUMA skip arrow/bullet yang jelas deskripsi paket
-    if (/^[➡️→▶️•▪️◾️▫️⬛️⬜️◼️◻️⚫️⚪️🔸🔹🔶🔷▸►‣⁃]\s*/.test(line)) {
+    if (/^[➡️→▶️•▪️◾️▫️⬛️⬜️◼️◻️⚫️⚪️🔸🔹🔶🔷▸►‣⃣]\s*/.test(line)) {
       continue;
     }
     
@@ -1708,7 +1730,7 @@ function mergeOrders(orders) {
     if (order.mergeCount > 1) {
       return {
         ...order,
-        original: `🔖 ${order.mergeCount}x dari: "${order.originals.join('", "')}"`,
+        original: `📖 ${order.mergeCount}x dari: "${order.originals.join('", "')}"`,
         isMerged: true
       };
     } else {
@@ -2033,8 +2055,8 @@ function displayResults(totals, orderCount, totalPortions, grandTotal) {
 
 function exportAsText() {
   try {
-    let output = "🍱 CITA RASA INDO - ORDER SUMMARY\n";
-    output += "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n";
+    let output = "🱑 CITA RASA INDO - ORDER SUMMARY\n";
+    output += "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n";
     
     output += "📋 PESANAN:\n\n";
     
@@ -2043,7 +2065,7 @@ function exportAsText() {
       if (order.isBakwanPack && order.name === 'BAKWAN 3PCS') {
         bakwanNote = ` (${order.qty} PACK = ${order.bakwanPcs} PCS)`;
       }
-      const mergeTag = order.isMerged ? ' 🔖' : '';
+      const mergeTag = order.isMerged ? ' 📖' : '';
       const aiTag = order.isAIPowered ? ' 🤖' : '';
       output += `${i+1}. ${order.name}${bakwanNote}${mergeTag}${aiTag} x${order.qty} = ¥${order.totalPrice}\n`;
     });
@@ -2051,7 +2073,7 @@ function exportAsText() {
     const grandTotal = state.orders.reduce((sum, o) => sum + o.totalPrice, 0);
     output += `\n💰 TOTAL: ¥${grandTotal}\n`;
     
-    output += `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+    output += `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
     output += "🍳 BAHAN YANG DIBUTUHKAN:\n\n";
     
     const totals = {};
@@ -2092,8 +2114,8 @@ function exportAsText() {
     }
     
     if (state.chickenTracker.total > 0) {
-      output += `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
-      output += `🍗 CATATAN AYAM:\n`;
+      output += `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+      output += `🐗 CATATAN AYAM:\n`;
       output += `Total: ${state.chickenTracker.total} potong\n`;
       if (state.chickenTracker.paha > 0) output += `• Paha: ${state.chickenTracker.paha} potong\n`;
       if (state.chickenTracker.dada > 0) output += `• Dada: ${state.chickenTracker.dada} potong\n`;
@@ -2101,7 +2123,7 @@ function exportAsText() {
     }
     
     if (state.specialNotes.length > 0) {
-      output += `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+      output += `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
       output += `⚠️ KONFIRMASI DIPERLUKAN:\n`;
       state.specialNotes.forEach(note => {
         output += `• ${note}\n`;
@@ -2109,14 +2131,14 @@ function exportAsText() {
     }
     
     if (state.undetectedLines.length > 0) {
-      output += `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+      output += `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
       output += `🚨 MENU TIDAK TERDETEKSI:\n`;
       state.undetectedLines.forEach(line => {
         output += `• "${line}"\n`;
       });
     }
     
-    output += `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+    output += `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
     output += `**✨ DOUBLE CHECK PLEASE!**\n`;
     output += `Powered by Google Gemini AI 🤖`;
     
@@ -2150,8 +2172,8 @@ function exportAsText() {
 
 function exportAsReceipt() {
   try {
-    let output = "🍱 CITA RASA INDO - ORDER\n";
-    output += "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n";
+    let output = "🱑 CITA RASA INDO - ORDER\n";
+    output += "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n";
     
     output += "📋 PESANAN:\n\n";
     
@@ -2167,7 +2189,7 @@ function exportAsReceipt() {
     
     const grandTotal = state.orders.reduce((sum, o) => sum + o.totalPrice, 0);
     
-    output += `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+    output += `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
     output += `💰 TOTAL: ¥${grandTotal}\n`;
     output += `**MOHON DOUBLE CHECK!**`;
     
@@ -2255,6 +2277,7 @@ window.addEventListener('DOMContentLoaded', () => {
   loadState();
   console.log('🤖 Gemini AI Ready!');
   console.log('🔥 API Key: HARDCODED (Testing Only!)');
+  console.log('✅ QUANTITY PARSING FIXED!');
 });
 </script>
 </body>
