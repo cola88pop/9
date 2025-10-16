@@ -2081,3 +2081,186 @@ function exportAsText() {
           if (key === 'bakwan') {
             const packs = Math.ceil(qty / 3);
             output += `  ${info.icon} ${info.name}: ${qty} pcs (${packs} pack)\n`;
+          } else {
+            output += `  ${info.icon} ${info.name}: ${qty} ${info.unit}\n`;
+          }
+        });
+      }
+    }
+    
+    if (state.chickenTracker.total > 0) {
+      output += `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+      output += `🍗 CATATAN AYAM:\n`;
+      output += `Total: ${state.chickenTracker.total} potong\n`;
+      if (state.chickenTracker.paha > 0) output += `• Paha: ${state.chickenTracker.paha} potong\n`;
+      if (state.chickenTracker.dada > 0) output += `• Dada: ${state.chickenTracker.dada} potong\n`;
+      if (state.chickenTracker.random > 0) output += `• Random: ${state.chickenTracker.random} potong\n`;
+    }
+    
+    if (state.specialNotes.length > 0) {
+      output += `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+      output += `⚠️ KONFIRMASI DIPERLUKAN:\n`;
+      state.specialNotes.forEach(note => {
+        output += `• ${note}\n`;
+      });
+    }
+    
+    if (state.undetectedLines.length > 0) {
+      output += `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+      output += `🚨 MENU TIDAK TERDETEKSI:\n`;
+      state.undetectedLines.forEach(line => {
+        output += `• "${line}"\n`;
+      });
+    }
+    
+    output += `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+    output += `**✨ DOUBLE CHECK PLEASE!**\n`;
+    output += `Powered by Google Gemini AI 🤖`;
+    
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(output).then(() => {
+        showAlert('✅ Copied to clipboard!', 'success');
+      }).catch(err => {
+        state.errorLogger.log('exportAsText', err);
+        const textarea = document.createElement('textarea');
+        textarea.value = output;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        showAlert('✅ Copied using fallback!', 'success');
+      });
+    } else {
+      const textarea = document.createElement('textarea');
+      textarea.value = output;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      showAlert('✅ Copied!', 'success');
+    }
+  } catch (error) {
+    state.errorLogger.log('exportAsText', error);
+    showAlert('❌ Export failed: ' + error.message, 'error');
+  }
+}
+
+function exportAsReceipt() {
+  try {
+    let output = "🍱 CITA RASA INDO - ORDER\n";
+    output += "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n";
+    
+    output += "📋 PESANAN:\n\n";
+    
+    state.orders.forEach((order, i) => {
+      let bakwanNote = '';
+      if (order.isBakwanPack && order.name === 'BAKWAN 3PCS') {
+        bakwanNote = ` (${order.qty} PACK = ${order.bakwanPcs} PCS)`;
+      }
+      const mergeTag = order.isMerged ? ' 📦' : '';
+      const aiTag = order.isAIPowered ? ' 🤖' : '';
+      output += `${i+1}. ${order.name}${bakwanNote}${mergeTag}${aiTag} x${order.qty} = ¥${order.totalPrice}\n`;
+    });
+    
+    const grandTotal = state.orders.reduce((sum, o) => sum + o.totalPrice, 0);
+    
+    output += `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+    output += `💰 TOTAL: ¥${grandTotal}\n`;
+    output += `\n🤖 Powered by Gemini AI\n`;
+    output += `MOHON DOUBLE CHECK!`;
+    
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(output).then(() => {
+        showAlert('✅ Receipt copied to clipboard!', 'success');
+      }).catch(err => {
+        state.errorLogger.log('exportAsReceipt', err);
+        const textarea = document.createElement('textarea');
+        textarea.value = output;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        showAlert('✅ Receipt copied using fallback!', 'success');
+      });
+    } else {
+      const textarea = document.createElement('textarea');
+      textarea.value = output;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      showAlert('✅ Receipt copied!', 'success');
+    }
+  } catch (error) {
+    state.errorLogger.log('exportAsReceipt', error);
+    showAlert('❌ Receipt export failed: ' + error.message, 'error');
+  }
+}
+
+function printResults() {
+  window.print();
+}
+
+function showAlert(message, type) {
+  const alertBox = document.getElementById('alertBox');
+  alertBox.textContent = message;
+  alertBox.className = `alert alert-${type} show`;
+  
+  setTimeout(() => alertBox.classList.remove('show'), 5000);
+}
+
+function clearAll() {
+  if (state.orders.length > 0 && !confirm('Hapus semua data?')) {
+    return;
+  }
+  
+  document.getElementById('orderInput').value = '';
+  state.orders = [];
+  state.specialNotes = [];
+  state.undetectedLines = [];
+  state.chickenTracker.reset();
+  
+  localStorage.removeItem(CONFIG.AUTO_SAVE_KEY);
+  localStorage.removeItem(CONFIG.TIMESTAMP_KEY);
+  
+  displayOrders();
+  document.getElementById('resultsSection').classList.remove('active');
+  document.getElementById('alertBox').classList.remove('show');
+  document.getElementById('ingredientGrid').innerHTML = '';
+  document.getElementById('grandTotalCard').style.display = 'none';
+  document.getElementById('chickenNotes').style.display = 'none';
+  document.getElementById('notesSection').style.display = 'none';
+  document.getElementById('undetectedSection').style.display = 'none';
+}
+
+function loadExample() {
+  const example = `GROUP ORDER INTERNAL 🕺🏻👋🏻, [10/14/2025 2:23 AM]
+PAKET RICEBOWL TERI ▶️ RMB25 x3
+➡️Nasi Putih
+➡️Sambal Teri
+➡️Telur Ceplok
+➡️Timun
+
+GROUP ORDER INTERNAL 🕺🏻👋🏻, [10/14/2025 2:23 AM]
+PAKET RICEBOWL CUMI ▶️ RMB25 x1
+➡️Nasi Putih
+➡️Sambal Cumi
+➡️Telur Ceplok
+➡️Timun
+
+PRAMES A x2
+BAKWAN 5 PACK`;
+
+  document.getElementById('orderInput').value = example;
+  showAlert('✨ Contoh ARROW FORMAT dimuat! Gemini AI siap parse! 🤖', 'info');
+}
+
+// 🔥 INIT ON PAGE LOAD
+window.addEventListener('DOMContentLoaded', () => {
+  loadState();
+  console.log('🤖 Gemini AI Ready!');
+  console.log('🔥 API Key: HARDCODED (Testing Only!)');
+});
+</script>
+</body>
+</html>
